@@ -1,0 +1,145 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>全国5A景区分布热度图 version6</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+      }
+      #Div1 {
+        background-color: #ffcc99;
+        height: 6%;
+        width: 100%;
+        float: left;
+        text-align: center;
+        font-size: 25px;
+        font-weight: 700;
+        color: #ff9966;
+      }
+
+      #viewDiv {
+        height: 94%;
+        width: 80%;
+        float: left;
+      }
+      #Div2 {
+        padding: 0%;
+        background-color: #f2efe8;
+        height: 94%;
+        width: 20%;
+        float: left;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.15/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.15/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/widgets/Legend",
+        "esri/widgets/ScaleBar",
+        "esri/widgets/BasemapGallery"
+      ], function(
+        Map,
+        MapView,
+        FeatureLayer,
+        Legend,
+        ScaleBar,
+        BasemapGallery
+      ) {
+        var map = new Map({
+          basemap: "osm"
+        });
+
+        var view1 = new MapView({
+          container: "viewDiv",
+          map: map,
+          center: [104.6, 34.2],
+          zoom: 5
+        });
+
+        var view2 = new MapView({
+          container: "Div2"
+        });
+
+        var XXLayer = new FeatureLayer({
+          url:
+            "http://www.arcgisonline.cn/server/rest/services/Hosted/%E5%85%A8%E5%9B%BD5A%E6%99%AF%E5%8C%BA%E5%88%86%E5%B8%83%E7%83%AD%E5%BA%A6%E5%9B%BE2/FeatureServer"
+        });
+        map.add(XXLayer);
+
+        var legend1 = new Legend({
+          view: view1,
+          layerInfos: [
+            {
+              layer: XXLayer,
+              title: "景点密度"
+            }
+          ]
+        });
+
+        view2.ui.add(legend1, "top-left");
+        view2.ui.remove("zoom");
+
+        var basemapGallery = new BasemapGallery({
+          view: view1
+        });
+        view2.ui.add(basemapGallery, {
+          position: "bottom-left"
+        });
+
+        var scaleBar1 = new ScaleBar({
+          view: view1,
+          style: "ruler",
+          unit: "metric"
+        });
+
+        view1.ui.add(scaleBar1, {
+          position: "bottom-left"
+        });
+
+        var coordsWidget = document.createElement("div");
+        coordsWidget.id = "coordsWidget";
+        coordsWidget.className = "esri-widget esri-component";
+        coordsWidget.style.padding = "7px 15px 5px";
+
+        view2.ui.add(coordsWidget, "bottom-right");
+        function showCoordinates(pt) {
+          var coords =
+            "Lat/Lon " +
+            pt.latitude.toFixed(3) +
+            " " +
+            pt.longitude.toFixed(3) +
+            " | 比例 1:" +
+            Math.round(view1.scale * 1) / 1 +
+            " | 缩放等级 " +
+            view1.zoom;
+          coordsWidget.innerHTML = coords;
+        }
+        view1.watch("stationary", function(isStationary) {
+          showCoordinates(view1.center);
+        });
+
+        view1.on("pointer-move", function(evt) {
+          showCoordinates(view1.toMap({ x: evt.x, y: evt.y }));
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="Div1">全国5A景区分布热度图</div>
+    <div id="viewDiv"></div>
+    <div id="Div2"></div>
+  </body>
+</html>
